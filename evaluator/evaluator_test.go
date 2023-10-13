@@ -43,3 +43,31 @@ func testIntObj(t *testing.T, obj object.Object, exp int64) bool {
 	}
 	return true
 }
+
+func TestEvalBool(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{"true", true},
+		{"false", false},
+	}
+
+	for _, tt := range tests {
+		eval := testEval(tt.input)
+		testBoolObj(t, eval, tt.expected)
+	}
+}
+
+func testBoolObj(t *testing.T, obj object.Object, expected bool) bool {
+	result, ok := obj.(*object.Boolean)
+	if !ok {
+		t.Errorf("fail")
+		return false
+	}
+	if result.Value != expected {
+		t.Errorf("fail")
+		return false
+	}
+	return true
+}
