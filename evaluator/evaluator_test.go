@@ -120,3 +120,66 @@ func TestBangOpp(t *testing.T) {
 		testBoolObj(t, eval, tt.expected)
 	}
 }
+
+func TestIfElse(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"if (true) { 10 }", 10},
+		{"if (false) { 10 }", nil},
+		{"if (1) { 10 }", 10},
+		{"if (1 < 2) { 10 }", 10},
+		{"if (1 > 2) { 10 }", nil},
+		{"if (1 > 2) { 10 } else { 20 }", 20},
+		{"if (1 < 2) { 10 } else { 20 }", 10},
+	}
+
+	for _, tt := range tests {
+		eval := testEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			testIntObj(t, eval, int64(integer))
+		} else {
+			testNullObj(t, eval)
+		}
+	}
+}
+
+func testNullObj(t *testing.T, obj object.Object) bool {
+	if obj != NULL {
+		t.Errorf("fail")
+		return false
+	}
+
+	return true
+}
+
+func TestReturnStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"return 10;", 10},
+		{"return 10; 9;", 10},
+		{"return 2 * 5; 9", 10},
+		{"9; return 10; 9;", 10},
+		{
+			`
+			if (10 > 1) {
+				if (10 > 1) {
+					return 10;
+				}
+
+				return 1;
+			}
+			`,
+			10,
+		},
+	}
+
+	for _, tt := range tests {
+		eval := testEval(tt.input)
+		testIntObj(t, eval, tt.expected)
+	}
+}
