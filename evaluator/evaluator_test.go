@@ -39,8 +39,9 @@ func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
+	env := object.NewEnvironment()
 
-	return Eval(program)
+	return Eval(program, env)
 }
 
 func testIntObj(t *testing.T, obj object.Object, exp int64) bool {
@@ -225,6 +226,10 @@ func TestErrorHandling(t *testing.T) {
 			`,
 			"unknown operator: BOOLEAN + BOOLEAN",
 		},
+		{
+			"foobar",
+			"identifier not found: foobar",
+		},
 	}
 
 	for _, tt := range tests {
@@ -239,5 +244,44 @@ func TestErrorHandling(t *testing.T) {
 		if errObj.Message != tt.expectedMessage {
 			t.Errorf("fail")
 		}
+	}
+}
+
+func TestLetStatement(t *testing.T) {
+	tests := []struct {
+		input string
+		exp   int64
+	}{
+		{"let a = 5; a;", 5},
+		{"let a = 5*5; a;", 25},
+		{"let a = 5; let b = a; b;", 5},
+		{"let a = 5; let b = a; let c = a + b + 5; c;", 15},
+	}
+
+	for _, tt := range tests {
+		testIntObj(t, testEval(tt.input), tt.exp)
+	}
+}
+
+func TestFunc(t *testing.T) {
+	input := "fn(x) { x + 2; };"
+	eval := testEval(input)
+	fn, ok := eval.(*object.Function)
+	if !ok {
+		t.Fatalf("fail")
+	}
+
+	if len(fn.Params) != 1 {
+		t.Fatalf("fail")
+	}
+
+	if fn.Params[0].String() != "x" {
+		t.Fatalf("Fail")
+	}
+
+	expBody := "(x + 2)"
+
+	if fn.Body.String() != expBody {
+		t.Fatalf("fail")
 	}
 }
