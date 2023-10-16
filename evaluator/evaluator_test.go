@@ -230,6 +230,10 @@ func TestErrorHandling(t *testing.T) {
 			"foobar",
 			"identifier not found: foobar",
 		},
+		{
+			`"Hello" - " " - "World"`,
+			"unknown operator: STRING - STRING",
+		},
 	}
 
 	for _, tt := range tests {
@@ -301,5 +305,31 @@ func TestFuncApplication(t *testing.T) {
 
 	for _, tt := range tests {
 		testIntObj(t, testEval(tt.input), tt.exp)
+	}
+}
+
+func TestStringLiteral(t *testing.T) {
+	input := `"Hello World!"`
+
+	eval := testEval(input)
+	str, ok := eval.(*object.String)
+	if !ok {
+		t.Fatalf("fail")
+	}
+	if str.Value != "Hello World!" {
+		t.Errorf("fail")
+	}
+}
+
+func TestStringConcat(t *testing.T) {
+	input := `"Hello" + " " + "World!"`
+
+	eval := testEval(input)
+	str, ok := eval.(*object.String)
+	if !ok {
+		t.Fatalf("fail")
+	}
+	if str.Value != "Hello World!" {
+		t.Errorf("fail")
 	}
 }
