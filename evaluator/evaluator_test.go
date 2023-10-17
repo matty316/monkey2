@@ -364,3 +364,20 @@ func TestBuiltin(t *testing.T) {
 		}
 	}
 }
+
+func TestArrayLit(t *testing.T) {
+	input := "[1, 2 * 2, 3 + 3]"
+	eval := testEval(input)
+	result, ok := eval.(*object.Array)
+	if !ok {
+		t.Fatalf("fail")
+	}
+
+	if len(result.Elements) != 3 {
+		t.Fatalf("fail")
+	}
+
+	testIntObj(t, result.Elements[0], 1)
+	testIntObj(t, result.Elements[1], 4)
+	testIntObj(t, result.Elements[2], 6)
+}
