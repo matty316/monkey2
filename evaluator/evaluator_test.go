@@ -333,3 +333,34 @@ func TestStringConcat(t *testing.T) {
 		t.Errorf("fail")
 	}
 }
+
+func TestBuiltin(t *testing.T) {
+	tests := []struct {
+		input string
+		exp   interface{}
+	}{
+		{`len("")`, 0},
+		{`len("four")`, 4},
+		{`len("hello world")`, 11},
+		{`len(1)`, "argument to `len` not supported, got INTEGER"},
+		{`len("one", "two")`, "wrong number of arguments. got=2, want=1"},
+	}
+
+	for _, tt := range tests {
+		eval := testEval(tt.input)
+
+		switch exp := tt.exp.(type) {
+		case int:
+			testIntObj(t, eval, int64(exp))
+		case string:
+			errObj, ok := eval.(*object.Error)
+			if !ok {
+				t.Errorf("fail")
+				continue
+			}
+			if errObj.Message != exp {
+				t.Errorf("fail")
+			}
+		}
+	}
+}
